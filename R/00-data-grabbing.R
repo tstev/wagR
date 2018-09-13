@@ -1,3 +1,4 @@
+# LOAD LIBRARIES REQUIRED ------------------------------------------------------
 library(tidyverse)
 library(tmap)
 library(sf)
@@ -6,14 +7,27 @@ library(httr)
 
 # LOAD AND PRE-PROCESS DATA ----------------------------------------------------
 # Wageningen Polling Station results
-wag_res <- fread("data/wagening_results.csv", nrows = 30L, na.strings = "",
-                 drop = c(1L, 22L, 23L), encoding = "UTF-8")
-setnames(wag_res, "V2", "PARTY")
+wag_election_res <- fread("data/wagening_results.csv", nrows = 30L,
+                          na.strings = "", drop = c(1L, 22L, 23L),
+                          encoding = "UTF-8")
 
-# Remove results from TK 2012
-wag_res <- wag_res[!str_detect(PARTY, "TK 2012")]
+# Clean column names
+setnames(wag_election_res, "V2", "PARTY")
+
+# Remove election results from 2012
+wag_election_res <- wag_election_res[!str_detect(PARTY, "TK 2012"),]
+
+# Extract/clean polling station names
+poll_station_names <- str_exclude(colnames(wag_election_res), "PARTY")
+poll_station_names <- str_replace_all(poll_station_names, "^\\d+(\\.|\\s*)", "")
+poll_station_names <- str_trim(poll_station_names)
+
+# Extract/clean political party names
+party_names <- str_exclude(wag_election_res[, PARTY], "BLANCO|NIET GELDIG")
+str_to_title(party_names)
+
 wag_res <- melt(wag_res, id.vars = "PARTY", variable.name = "STATION",
-     value.name = "RESULTS", variable.factor = FALSE)
+                value.name = "RESULTS", variable.factor = FALSE)
 
 # Wageningen Polling stations CBS file
 wag_stations <- read_csv("data/2fc13394-c2fc-4492-843c-cba07e4bf8f5.csv") %>%
@@ -74,8 +88,5 @@ qtm(wag_buurten)
 
 qtm(wag_buurten) +
   qtm(wag_polls)
-
-##Test
-
 
 qtm(wag_polls)
