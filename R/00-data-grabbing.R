@@ -58,7 +58,9 @@ url <- list(hostname = "geodata.nationaalgeoregister.nl/cbsgebiedsindelingen/wfs
   setattr("class","url")
 request <- build_url(url)
 
-nl_mun <- st_read(request, stringsAsFactors = FALSE)
+nl_mun <- st_read(request, stringsAsFactors = FALSE) %>%
+            select(statcode, gemeente = statnaam, geometry) %>%
+              filter(gemeente == "Wageningen")
 
 # -------
 url <- list(hostname = "geodata.nationaalgeoregister.nl/cbsgebiedsindelingen/wfs",
@@ -72,12 +74,14 @@ url <- list(hostname = "geodata.nationaalgeoregister.nl/cbsgebiedsindelingen/wfs
   setattr("class","url")
 request <- build_url(url)
 
-nl_buurt <- st_read(request, stringsAsFactors = FALSE)
+nl_buurt <- st_read(request, stringsAsFactors = FALSE) %>%
+              select(statcode, buurt = statnaam, geometry)
 
 # -------------
-wag_sf <- nl_mun %>% filter(statcode == "GM0289")
 
-wag_buurten <- st_intersection(wag_sf, nl_buurt)
+wag_buurten <- st_intersection(nl_mun, nl_buurt)
+qtm(wag_buurten)
+
 
 wag_polls <- st_as_sf(wag_dat, coords = c("Longitude", "Latitude"))
 st_crs(wag_polls) <- 4326
