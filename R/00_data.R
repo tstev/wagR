@@ -12,24 +12,24 @@ setnames(wag_res, "V2", "PARTY")
 
 # Remove results from TK 2012
 wag_res <- wag_res[!str_detect(PARTY, "TK 2012")]
-wag_res <- melt(wag_res, id.vars = "PARTY", variable.name = "STATION", 
+wag_res <- melt(wag_res, id.vars = "PARTY", variable.name = "STATION",
      value.name = "RESULTS", variable.factor = FALSE)
 
 # Wageningen Polling stations CBS file
-wag_stations <- read_csv("data/2fc13394-c2fc-4492-843c-cba07e4bf8f5.csv") %>% 
+wag_stations <- read_csv("data/2fc13394-c2fc-4492-843c-cba07e4bf8f5.csv") %>%
   filter(Gemeente == "Wageningen") %>%
-  select(`CBS buurtnummer`, Wijknaam, `CBS wijknummer`, Buurtnaam, `Naam stembureau`, 
+  select(`CBS buurtnummer`, Wijknaam, `CBS wijknummer`, Buurtnaam, `Naam stembureau`,
          Straatnaam, Huisnummer, Huisnummertoevoeging, Postcode,
          Longitude, Latitude)
 setDT(wag_stations)
 setnames(wag_stations, "Naam stembureau", "STATION")
 
 
-tmp <- stringdist_semi_join(wag_res[PARTY == "VVD",], 
+tmp <- stringdist_semi_join(wag_res[PARTY == "VVD",],
                             wag_stations, by = "STATION")
 
 # Select only Wagenengen Polling stations
-wag_dat <- stations 
+wag_dat <- stations
 tmpfile <- tempfile(fileext = ".zip")
 
 # Get Wageningen BUURT shapefile
@@ -72,10 +72,10 @@ qtm(wag_polls)
 
 qtm(wag_buurten)
 
-qtm(wag_buurten) + 
+qtm(wag_buurten) +
   qtm(wag_polls)
 
-
+##Test
 
 
 qtm(wag_polls)
