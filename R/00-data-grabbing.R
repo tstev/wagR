@@ -85,15 +85,6 @@ wag_polls <- st_as_sf(wag_dat, coords = c("Longitude", "Latitude"))
 st_crs(wag_polls) <- 4326
 qtm(wag_polls)
 
-
-qtm(wag_buurten)
-
-qtm(wag_buurten) +
-  qtm(wag_polls)
-
-qtm(wag_polls)
-
-
 wag_res$STATION <- ifelse(wag_res$STATION == "1.Gem.huis", "Gemeente Wageningen",
                           ifelse(wag_res$STATION == "2.Nudehof", "Verzorgingshuis De Nudehof",
                                  ifelse(wag_res$STATION == "3.Rumah Kita", "Verzorgingshuis Rumah Kita",
