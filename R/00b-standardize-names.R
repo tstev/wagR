@@ -43,28 +43,30 @@ for (t in tabs) {
 }
 
 # Replace empty cells with NA
-nl_parties <- nl_parties %>% mutate(
-  ABBR = str_replace_all(ABBR, "$^", NA_character_))
-
-nl_parties <- nl_parties %>% mutate(
-  ABBR = str_replace_na(ABBR, ""))
-
-
+nl_parties <- nl_parties %>%
+  mutate(ABBR = str_replace_all(ABBR, "$^", NA_character_))
 
 x <- c("VVD", "P.v.d.A.", "PVV", "SP", "CDA", "D66", "ChristenUnie",
        "GROENLINKS", "SGP", "Partij voor de Dieren", "50PLUS", "Ondernemers Partij",
        "VNL", "DENK", "NIEUWE WEGEN", "Forum voor Democratie", "De Burger Beweging",
        "Vrijzinnige Partij", "GeenPeil", "Piraten partij", "Artikel 1",
        "Niet Stemmers", "Libertarische Partij", "Lokaal in de Kamer",
-       "JESUS LEEFT", "StemNL", "MenS en Spirit / ...")
-x <- data.frame(PARTY = x, ABBR = "")
+       "JESUS LEEFT", "StemNL", "MenS en Spirit / …")
+x <- data.frame(PARTY = x, ABBR = x)
 
-pairs <- pair_blocking(x, nl_parties)
-tmp <- compare_pairs(pairs, by = c("PARTY", "ABRR"),
-              comparators = jaro_winkler(0.9))
+pairs <- pair_blocking(x, nl_parties, large = FALSE)
+tmp <- compare_pairs(pairs, by = c("PARTY","ABBR"),
+              comparators = list(PARTY = jaro_winkler2(0.9),
+                                 ABBR = identical2(ignore_case = FALSE)))
+tmp2 <- as.data.frame(tmp)
+score_tmp <- score_simsum(tmp, na_value = -0.1)
+tmp3 <- as.data.frame(score_tmp)
+
+test <- link(select_greedy(score_tmp), all_x = TRUE)
 
 
-
+x[18,]
+nl_parties[37,]
 stringdist_left_join(x, nl_parties, by = "PARTY", ignore_case = TRUE)
 stringdist_left_join(x, nl_parties, by = c(PARTY = "ABBR"), ignore_case = TRUE)
 
