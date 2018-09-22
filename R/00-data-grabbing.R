@@ -4,6 +4,7 @@ library(tmap)
 library(sf)
 library(data.table)
 library(httr)
+source("R/str_exclude.R")
 
 # LOAD AND PRE-PROCESS DATA ----------------------------------------------------
 # Wageningen Polling Station results
@@ -28,7 +29,7 @@ poll_station_names <- str_trim(poll_station_names)
 # Extract/clean political party names
 party_names <- str_exclude(wag_election_res[, PARTY], "BLANCO|NIET GELDIG")
 
-wag_res <- melt(wag_res, id.vars = "PARTY", variable.name = "STATION",
+wag_election_res <- melt(wag_election_res, id.vars = "PARTY", variable.name = "STATION",
                 value.name = "RESULTS", variable.factor = FALSE)
 
 # Wageningen Polling stations CBS file
@@ -39,12 +40,6 @@ wag_stations <- read_csv("data/2fc13394-c2fc-4492-843c-cba07e4bf8f5.csv") %>%
          Longitude, Latitude)
 setDT(wag_stations)
 setnames(wag_stations, "Naam stembureau", "STATION")
-
-
-
-# Select only Wageningen Polling stations
-wag_dat <- stations
-tmpfile <- tempfile(fileext = ".zip")
 
 # Get Wageningen gemeente shapefile en data
 url <- list(hostname = "geodata.nationaalgeoregister.nl/cbsgebiedsindelingen/wfs",
@@ -81,36 +76,29 @@ nl_buurt <- st_read(request, stringsAsFactors = FALSE) %>%
 wag_buurten <- st_intersection(nl_mun, nl_buurt)
 
 
-wag_polls <- st_as_sf(wag_dat, coords = c("Longitude", "Latitude"))
-st_crs(wag_polls) <- 4326
-qtm(wag_polls)
+wag_stations <- st_as_sf(wag_stations, coords = c("Longitude", "Latitude"))
+st_crs(wag_stations) <- 4326
 
 
-qtm(wag_buurten)
 
-qtm(wag_buurten) +
-  qtm(wag_polls)
+wag_election_res$STATION <- ifelse(wag_election_res$STATION == "1.Gem.huis", "Gemeente Wageningen",
+                          ifelse(wag_election_res$STATION == "2.Nudehof", "Verzorgingshuis De Nudehof",
+                                 ifelse(wag_election_res$STATION == "3.Rumah Kita", "Verzorgingshuis Rumah Kita",
+                                        ifelse(wag_election_res$STATION == "4.'t Startpunt", "'t Startpunt",
+                                               ifelse(wag_election_res$STATION == "5 Gerk.Vrij", "Gereformeerde Kerk Vrijgemaakt",
+                                                      ifelse(wag_election_res$STATION == "6. Johan Friso Z", "Johan Frisoschool Zuid",
+                                                             ifelse(wag_election_res$STATION == "7. Pomhorst", "Wijkcentrum De Pomhorst",
+                                                                    ifelse(wag_election_res$STATION == "8. Tarthorst", "OBS De Tarthorst",
+                                                                           ifelse(wag_election_res$STATION == "9. Tuindorp", "Speeltuinvereniging Tuindorp",
+                                                                                  ifelse(wag_election_res$STATION == "10.Piekschooll", "H.J. Piekschool",
+                                                                                         ifelse(wag_election_res$STATION == "11. Margrietschool", "De Margrietschool",
+                                                                                                ifelse(wag_election_res$STATION == "12. Vlinder", "Sporthal De Vlinder",
+                                                                                                       ifelse(wag_election_res$STATION == "13 Belmonte", "Serviceflag Belmonte",
+                                                                                                              ifelse(wag_election_res$STATION == "14.Bibliotheek", "BBLTHK",
+                                                                                                                     ifelse(wag_election_res$STATION == "15 Nol in't Bosch", "Hotel Nol in 't Bosch",
+                                                                                                                            ifelse(wag_election_res$STATION == "16.Neijenoord", "OBS De Nijenoord",
+                                                                                                                                   ifelse(wag_election_res$STATION == "17. WAVV", "Voetbalvereniging WAVV",
+                                                                                                                                          ifelse(wag_election_res$STATION == "18.Brandweer", "De Brandweerkazerne",
+                                                                                                                                                 ifelse(wag_election_res$STATION == "19.Campus", "Campus WUR Forumgebouw", "hou op")))))))))))))))))))
 
-qtm(wag_polls)
-
-
-wag_res$STATION <- ifelse(wag_res$STATION == "1.Gem.huis", "Gemeente Wageningen",
-                          ifelse(wag_res$STATION == "2.Nudehof", "Verzorgingshuis De Nudehof",
-                                 ifelse(wag_res$STATION == "3.Rumah Kita", "Verzorgingshuis Rumah Kita",
-                                        ifelse(wag_res$STATION == "4.'t Startpunt", "'t Startpunt",
-                                               ifelse(wag_res$STATION == "5 Gerk.Vrij", "Gereformeerde Kerk Vrijgemaakt",
-                                                      ifelse(wag_res$STATION == "6. Johan Friso Z", "Johan Frisoschool Zuid",
-                                                             ifelse(wag_res$STATION == "7. Pomhorst", "Wijkcentrum De Pomhorst",
-                                                                    ifelse(wag_res$STATION == "8. Tarthorst", "OBS De Tarthorst",
-                                                                           ifelse(wag_res$STATION == "9. Tuindorp", "Speeltuinvereniging Tuindorp",
-                                                                                  ifelse(wag_res$STATION == "10.Piekschooll", "H.J. Piekschool",
-                                                                                         ifelse(wag_res$STATION == "11. Margrietschool", "De Margrietschool",
-                                                                                                ifelse(wag_res$STATION == "12. Vlinder", "Sporthal De Vlinder",
-                                                                                                       ifelse(wag_res$STATION == "13 Belmonte", "Serviceflag Belmonte",
-                                                                                                              ifelse(wag_res$STATION == "14.Bibliotheek", "BBLTHK",
-                                                                                                                     ifelse(wag_res$STATION == "15 Nol in't Bosch", "Hotel Nol in 't Bosch",
-                                                                                                                            ifelse(wag_res$STATION == "16.Neijenoord", "OBS De Nijenoord",
-                                                                                                                                   ifelse(wag_res$STATION == "17. WAVV", "Voetbalvereniging WAVV",
-                                                                                                                                          ifelse(wag_res$STATION == "18.Brandweer", "De Brandweerkazerne",
-                                                                                                                                                 ifelse(wag_res$STATION == "19.Campus", "Campus WUR Forumgebouw", "hou op")))))))))))))))))))
 
